@@ -1,2 +1,2 @@
 # riscv-openocd without submodules
-See `make.sh` <hash>
+See `make.sh <hash>`
