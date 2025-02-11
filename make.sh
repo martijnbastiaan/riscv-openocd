@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -eu
+set -exu
 
 HERE=$(dirname $(readlink -f $0))
 RISCV_OPENOCD="${HERE}/riscv-openocd"
@@ -8,7 +8,11 @@ rm -rf "${RISCV_OPENOCD}"
 git clone git@github.com:riscv-collab/riscv-openocd.git --recursive "${RISCV_OPENOCD}"
 cd "${RISCV_OPENOCD}"
 git reset --hard "$1"
+git submodule init
 git submodule update --recursive
+
+git rm .gitignore
+git commit -am "Remove .gitignore"
 
 paths="$(git config --file .gitmodules --get-regexp path | awk '{ print $2 }')"
 for path in ${paths}
@@ -22,9 +26,11 @@ do
     git rm -r "${path}"
     git commit -am "Remove submodule $(basename ${path})"
 
-    git clone "${url}" "${path}"
+    git clone "${url}" "${path}" --recursive
     cd "${path}"
-    git checkout "${commit}"
+    git reset --hard "${commit}"
+    git submodule init
+    git submodule update --recursive
     rm -rf .git
     cd "${RISCV_OPENOCD}"
     git add "${path}"
